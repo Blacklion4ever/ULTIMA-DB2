@@ -1,0 +1,7 @@
+int32 brightness
+int32 contrast
+int32 saturation
+int32 hue
+---
+bool success
+string message

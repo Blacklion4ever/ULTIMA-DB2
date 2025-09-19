@@ -1,0 +1,24 @@
+<?xml version="1.0"?>
+<package format="3">
+  <name>sensor_msgs_pkg</name>
+  <version>0.1.0</version>
+  <description>Package contenant les définitions de services pour la caméra</description>
+
+  <maintainer email="ton.email@example.com">TonNom</maintainer>
+  <license>Apache-2.0</license>
+
+  <!-- Dépendances build -->
+  <buildtool_depend>ament_cmake</buildtool_depend>
+  <build_depend>rosidl_default_generators</build_depend>
+
+  <!-- Dépendances runtime -->
+  <exec_depend>rosidl_default_runtime</exec_depend>
+
+  <!-- IMPORTANT pour les services -->
+  <member_of_group>rosidl_interface_packages</member_of_group>
+
+  <export>
+    <build_type>ament_cmake</build_type>
+  </export>
+</package>
+
