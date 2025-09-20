@@ -16,13 +16,13 @@ from io import BytesIO
 
 
 class CapComNode(Node):
-    def __init__(self, port='/dev/ttyTHS1', baudrate=57600, remoteID='ROBOT', mode='robot'):
+    def __init__(self, port='/dev/ttyTHS1', baudrate=57600, remoteID='STATION', mode='robot'):
         super().__init__('cap_com')
 
         # --- Déclarer les paramètres ROS2 ---
         self.port = self.declare_parameter('com_port', '/dev/ttyTHS1').get_parameter_value().string_value
         self.baudrate = self.declare_parameter('com_baudrate', 57600).get_parameter_value().integer_value
-        self.remoteID = self.declare_parameter('remote_id', 'ROBOT').get_parameter_value().string_value
+        self.remoteID = self.declare_parameter('remote_id', 'STATION').get_parameter_value().string_value
         self.mode = self.declare_parameter('mode', 'robot').get_parameter_value().string_value
 
         self.get_logger().info(f"Starting CapComNode in mode {self.mode}")
@@ -92,6 +92,7 @@ class CapComNode(Node):
                     data = new_frame.GetStructuredData()
                     if data is not None and data != 0:
                         pub.publish(data)
+                        self.get_logger().info("Publishing data recieved")
 
 
 def main(args=None):

@@ -41,17 +41,17 @@ class ActuatorsNode(Node):
         pan = np.rad2deg(msg.z)
         self.kit.servo[4].angle = tilt
         self.kit.servo[5].angle = pan
-        self.get_logger().info(f"Camera -> Tilt: {tilt:.2f}°, Pan: {pan:.2f}°")
+        #self.get_logger().info(f"Camera -> Tilt: {tilt:.2f}°, Pan: {pan:.2f}°")
 
     def set_wheel_pose(self, msg: Float64):
-        val = max(min(np.rad2deg(msg.data), 160), 15)
+        val = max(min(60 + np.rad2deg(msg.data), 160), 15)
         self.kit.servo[0].angle = val
-        self.get_logger().info(f"Wheel -> {val:.2f}°")
+        #self.get_logger().info(f"Wheel -> {val:.2f}°")
 
     def set_pedal_pose(self, msg: Float64):
         val = max(min(msg.data, 0.25), -0.25)
         self.kit.continuous_servo[8].throttle = val
-        self.get_logger().info(f"Throttle -> {val:.2f}")
+        #self.get_logger().info(f"Throttle -> {val:.2f}")
 
 
 def main(args=None):
