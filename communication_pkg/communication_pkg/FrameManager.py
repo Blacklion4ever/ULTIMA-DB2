@@ -9,6 +9,7 @@ import struct
 from enum import IntEnum
 import geometry_msgs.msg as msg
 from std_msgs.msg import UInt64,Float32
+from rclpy.serialization import deserialize_message
 
 class FrameType(IntEnum):
     UNKNOWN = 0
@@ -95,29 +96,22 @@ class FrameHandler:
     def GetStructuredData(self):     
         datasize = len(self.frameData)
         if self.isValid == False:
-            return 0        
-        if self.frameLabel == FrameLabel.CAM_POSE:            
-            if datasize== 36:
-                value = msg.Quaternion()
-                #ignorer les 4 premiers octets header ROS2
-                value.deserialize(self.frameData[4:])
-                return value
+            return 0
+        if self.frameLabel == FrameLabel.CAM_POSE:
+            if datasize == 36:
+                return deserialize_message(self.frameData, msg.Quaternion)
             else:
-                print("recieved : "+str(datasize)+" : expected 32")
-                return None 
+                print(f"recieved : {datasize} : expected 32")
+                return None
         elif self.frameLabel == FrameLabel.PEDAL_POSE:             
             if datasize== 4:
-                value = Float32()
-                value.deserialize(self.frameData)
-                return value
+                return deserialize_message(self.frameData, Float32())
             else:
                 print("recieved : "+str(datasize)+" : expected 4")
                 return None
         elif self.frameLabel == FrameLabel.WHEEL_POSE:
             if datasize== 4:
-                value = Float32()
-                value.deserialize(self.frameData)
-                return value
+                return deserialize_message(self.frameData, Float32())
             else:
                 print("recieved : "+str(datasize)+" : expected 4")
                 return None

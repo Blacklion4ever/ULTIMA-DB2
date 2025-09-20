@@ -13,6 +13,7 @@ from diagnostic_msgs.msg import DiagnosticArray, DiagnosticStatus, KeyValue
 from rclpy.qos import QoSProfile
 from time import time
 from io import BytesIO
+from rclpy.serialization import serialize_message
 
 # Imports relatifs
 from .XbeeManager import Xbee
@@ -69,18 +70,15 @@ class CapComNode(Node):
             self.get_logger().warning("Not valid frame to be sent")
 
     def send_CAM_POSE(self, data):
-        buffer = BytesIO()
-        data.serialize(buffer)
+        buffer = BytesIO(serialize_message(data))
         self.send_(FrameHandler(FrameType.COMMAND, FrameSubType.STATE, FrameLabel.CAM_POSE, buffer))
 
     def send_PEDAL_POSE(self, data):
-        buffer = BytesIO()
-        data.serialize(buffer)
+        buffer = BytesIO(serialize_message(data))
         self.send_(FrameHandler(FrameType.COMMAND, FrameSubType.STATE, FrameLabel.PEDAL_POSE, buffer))
 
     def send_WHEEL_POSE(self, data):
-        buffer = BytesIO()
-        data.serialize(buffer)
+        buffer = BytesIO(serialize_message(data))
         self.send_(FrameHandler(FrameType.COMMAND, FrameSubType.STATE, FrameLabel.WHEEL_POSE, buffer))
 
     # --- Ping (station uniquement) ---
