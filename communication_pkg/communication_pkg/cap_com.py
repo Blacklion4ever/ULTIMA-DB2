@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-ROS2 Eloquent / Humble compatible CapComNode
+ROS2 Eloquent compatible CapComNode
 Ping envoyé uniquement par la station, Pong en réponse par le robot.
 """
 
@@ -13,13 +13,40 @@ from diagnostic_msgs.msg import DiagnosticArray, DiagnosticStatus, KeyValue
 from rclpy.qos import QoSProfile
 from time import time
 from io import BytesIO
-from rclpy.serialization import serialize_message
+import msgpack
+from rosidl_runtime_py.convert import message_to_ordereddict
 
 # Imports relatifs
 from .XbeeManager import Xbee
 from .FrameManager import FrameHandler, FrameLabel, FrameSubType, FrameType
 
+# -------------------------------------
+# Sérialisation agnostique ROS2 (Eloquent compatible)
+# -------------------------------------
+def dict_to_msg(d, msg_type):
+    """
+    Convertit un dict (produit par message_to_ordereddict) en message ROS 2.
+    Compatible ROS2 Eloquent.
+    """
+    msg_obj = msg_type.__class__() if isinstance(msg_type, msg_type.__class__) else msg_type()
+    for field, value in d.items():
+        if hasattr(msg_obj, field):
+            setattr(msg_obj, field, value)
+    return msg_obj
 
+def serialize_message(msg):
+    """Sérialise un message ROS 2 en bytes via msgpack"""
+    msg_dict = message_to_ordereddict(msg)
+    return msgpack.packb(msg_dict)
+
+def deserialize_message(serialized_message, msg_type):
+    """Désérialise un message ROS 2 à partir de bytes via msgpack"""
+    msg_dict = msgpack.unpackb(serialized_message)
+    return dict_to_msg(msg_dict, msg_type)
+
+# -------------------------------------
+# CapComNode
+# -------------------------------------
 class CapComNode(Node):
     def __init__(self, port='/dev/ttyTHS1', baudrate=57600, remoteID='STATION', mode='robot'):
         super().__init__('cap_com')
@@ -30,9 +57,9 @@ class CapComNode(Node):
         self.remoteID = self.declare_parameter('remote_id', 'STATION').get_parameter_value().string_value
         self.mode = self.declare_parameter('mode', 'robot').get_parameter_value().string_value
 
-        # Paramètres de supervision (utilisés uniquement par la station)
+        # Paramètres de supervision (station uniquement)
         self.ping_interval = self.declare_parameter('ping_interval', 1.0).get_parameter_value().double_value
-        self.max_latency = self.declare_parameter('max_latency', 0.5).get_parameter_value().double_value  # secondes
+        self.max_latency = self.declare_parameter('max_latency', 0.5).get_parameter_value().double_value
         self.ping_timeout = self.declare_parameter('ping_timeout', 2.0).get_parameter_value().double_value
 
         self.get_logger().info(f"Starting CapComNode in mode {self.mode}")
@@ -81,10 +108,9 @@ class CapComNode(Node):
         buffer = BytesIO(serialize_message(data))
         self.send_(FrameHandler(FrameType.COMMAND, FrameSubType.STATE, FrameLabel.WHEEL_POSE, buffer))
 
-    # --- Ping (station uniquement) ---
+    # --- Ping / supervision ---
     def send_ping(self):
-        """Envoie un ping périodique pour mesurer la latence et l'état du lien."""
-        if self.mode != 'teleop':  # Ne jamais envoyer depuis le robot
+        if self.mode != 'teleop':
             return
         self.last_ping_sent = time()
         buffer = BytesIO()
@@ -93,7 +119,6 @@ class CapComNode(Node):
         self.get_logger().debug("Ping sent")
 
     def check_connection(self):
-        """Vérifie si la connexion est perdue (station uniquement)."""
         if self.mode != 'teleop':
             return
         now = time()
@@ -110,7 +135,7 @@ class CapComNode(Node):
             if new_frame.isValid:
                 label = new_frame.GetLabel()
 
-                # Si on reçoit un PING côté robot -> répondre par un PONG
+                # Ping / Pong
                 if self.mode == 'robot' and label == FrameLabel.PING:
                     self.get_logger().debug("Ping received -> sending Pong")
                     buffer = BytesIO()
@@ -118,7 +143,6 @@ class CapComNode(Node):
                     self.send_(FrameHandler(FrameType.COMMAND, FrameSubType.STATE, FrameLabel.PONG, buffer))
                     return
 
-                # Si on reçoit un PONG côté station -> calculer latence
                 if self.mode == 'teleop' and label == FrameLabel.PONG:
                     now = time()
                     latency = now - self.last_ping_sent if self.last_ping_sent else float('inf')
@@ -178,6 +202,9 @@ class CapComNode(Node):
             FrameLabel.WHEEL_POSE: self.get_or_create_publisher('wheel_pose', Float32)
         }.get(label, None)
 
+# -------------------------------------
+# Main
+# -------------------------------------
 def main(args=None):
     rclpy.init(args=args)
     node = CapComNode()
