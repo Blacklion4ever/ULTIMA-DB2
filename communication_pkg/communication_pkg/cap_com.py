@@ -2,11 +2,7 @@
 # -*- coding: utf-8 -*-
 """
 ROS2 Eloquent / Humble compatible CapComNode
-<<<<<<< HEAD
 Ping envoyé uniquement par la station, Pong en réponse par le robot.
-=======
-Ajout du ping/pong et supervision basique.
->>>>>>> origin/main
 """
 
 import rclpy
@@ -33,11 +29,7 @@ class CapComNode(Node):
         self.remoteID = self.declare_parameter('remote_id', 'STATION').get_parameter_value().string_value
         self.mode = self.declare_parameter('mode', 'robot').get_parameter_value().string_value
 
-<<<<<<< HEAD
         # Paramètres de supervision (utilisés uniquement par la station)
-=======
-        # Paramètres de supervision
->>>>>>> origin/main
         self.ping_interval = self.declare_parameter('ping_interval', 1.0).get_parameter_value().double_value
         self.max_latency = self.declare_parameter('max_latency', 0.5).get_parameter_value().double_value  # secondes
         self.ping_timeout = self.declare_parameter('ping_timeout', 2.0).get_parameter_value().double_value
@@ -58,20 +50,12 @@ class CapComNode(Node):
         self.XbeeDevice = Xbee()
         self.XbeeDevice.Start(port=self.port, baudrate=self.baudrate, remoteID=self.remoteID, callback=self.Reception)
 
-<<<<<<< HEAD
         # Supervision activée uniquement pour la station
         if self.mode == 'teleop':
             self.last_pong_time = time()
             self.last_ping_sent = None
             self.timer_ping = self.create_timer(self.ping_interval, self.send_ping)
             self.timer_watchdog = self.create_timer(1.0, self.check_connection)
-=======
-        # Supervision ping/pong
-        self.last_pong_time = time()
-        self.last_ping_sent = None
-        self.timer_ping = self.create_timer(self.ping_interval, self.send_ping)
-        self.timer_watchdog = self.create_timer(1.0, self.check_connection)
->>>>>>> origin/main
 
     # --- Send / receive functions ---
     def send_(self, Frame):
@@ -99,17 +83,11 @@ class CapComNode(Node):
         data.serialize(buffer)
         self.send_(FrameHandler(FrameType.COMMAND, FrameSubType.STATE, FrameLabel.WHEEL_POSE, buffer))
 
-<<<<<<< HEAD
     # --- Ping (station uniquement) ---
     def send_ping(self):
         """Envoie un ping périodique pour mesurer la latence et l'état du lien."""
         if self.mode != 'teleop':  # Ne jamais envoyer depuis le robot
             return
-=======
-    # --- Ping/Pong functions ---
-    def send_ping(self):
-        """Envoie un ping périodique pour mesurer la latence et l'état du lien."""
->>>>>>> origin/main
         self.last_ping_sent = time()
         buffer = BytesIO()
         buffer.write(b"PING")
@@ -117,13 +95,9 @@ class CapComNode(Node):
         self.get_logger().debug("Ping sent")
 
     def check_connection(self):
-<<<<<<< HEAD
         """Vérifie si la connexion est perdue (station uniquement)."""
         if self.mode != 'teleop':
             return
-=======
-        """Vérifie si la connexion est perdue."""
->>>>>>> origin/main
         now = time()
         if now - self.last_pong_time > self.ping_timeout:
             self.get_logger().error("No pong received! Connection lost.")
@@ -136,7 +110,6 @@ class CapComNode(Node):
             new_frame.parse(xbee_message.data)
 
             if new_frame.isValid:
-<<<<<<< HEAD
                 label = new_frame.GetLabel()
 
                 # Si on reçoit un PING côté robot -> répondre par un PONG
@@ -149,10 +122,6 @@ class CapComNode(Node):
 
                 # Si on reçoit un PONG côté station -> calculer latence
                 if self.mode == 'teleop' and label == FrameLabel.PONG:
-=======
-                # Gestion du PONG
-                if new_frame.GetLabel() == FrameLabel.PONG:
->>>>>>> origin/main
                     now = time()
                     latency = now - self.last_ping_sent if self.last_ping_sent else float('inf')
                     self.last_pong_time = now
@@ -163,11 +132,7 @@ class CapComNode(Node):
                     return
 
                 # Données classiques
-<<<<<<< HEAD
                 pub = self.Publish(label)
-=======
-                pub = self.Publish(new_frame.GetLabel())
->>>>>>> origin/main
                 if pub is not None:
                     data = new_frame.GetStructuredData()
                     if data is not None and data != 0:
