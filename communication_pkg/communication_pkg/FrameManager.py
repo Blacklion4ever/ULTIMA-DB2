@@ -97,9 +97,10 @@ class FrameHandler:
         if self.isValid == False:
             return 0        
         if self.frameLabel == FrameLabel.CAM_POSE:            
-            if datasize== 32:
+            if datasize== 36:
                 value = msg.Quaternion()
-                value.deserialize(self.frameData)
+                #ignorer les 4 premiers octets header ROS2
+                value.deserialize(self.frameData[4:])
                 return value
             else:
                 print("recieved : "+str(datasize)+" : expected 32")
