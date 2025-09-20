@@ -29,9 +29,9 @@ class Xbee():
         #Read the device information of the remote XBee device.
         self.device.read_device_info()
         # Add the callback.
-        callback = callback
-        if callback is not None:
-            self.device.add_data_received_callback(callback)
+        self.callback = callback
+        if self.callback is not None:
+            self.device.add_data_received_callback(self.callback)
         # get the network belonging
         xnet = self.device.get_network()
         # Discover the remote node whose node ID is ‘SOME NODE ID’.
@@ -47,17 +47,24 @@ class Xbee():
             teleop_id = self.remote.get_node_id()
             print("Device with node id: %s found" % teleop_id)
     
-    def Send(self,data):
+    def Send(self, data, remoteID="STATION"):
         try:
+            # Vérifie si le remote existe avant d'envoyer
+            if self.remote is None:
+                print("[WARN] Remote not found, trying to rediscover...")
+                self.remote = self.device.get_network().discover_device(remoteID)
             if self.remote is not None:
-                self.device.send_data(self.remote, data)
-                return True
+                print(f"[INFO] Remote '{remoteID}' rediscovered successfully.")
             else:
-                return False
-        except (TransmitException,TimeoutException):
-            print("Oops! XbeeSend failled")   
+                print(f"[ERROR] Failed to rediscover remote '{remoteID}'.")
+                return False  # Échec car pas de remote disponible
+            # Envoi des données si le remote est valide
+            self.device.send_data(self.remote, data)
+            return True
+        except (TransmitException, TimeoutException) as e:
+            print(f"[ERROR] XbeeSend failed: {e}")
             return False
-        
+   
     def Stop(self):
         # Delete the callback
         if self.callback is not None:
