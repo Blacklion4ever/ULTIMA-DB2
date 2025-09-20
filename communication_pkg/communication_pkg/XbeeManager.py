@@ -53,11 +53,12 @@ class Xbee():
             if self.remote is None:
                 print("[WARN] Remote not found, trying to rediscover...")
                 self.remote = self.device.get_network().discover_device(remoteID)
-            if self.remote is not None:
-                print(f"[INFO] Remote '{remoteID}' rediscovered successfully.")
-            else:
-                print(f"[ERROR] Failed to rediscover remote '{remoteID}'.")
-                return False  # Échec car pas de remote disponible
+                #still issue
+                if self.remote is None:
+                    print(f"[ERROR] Failed to rediscover remote '{remoteID}'.")
+                    return False  # Échec car pas de remote disponible
+                else:
+                    print(f"[INFO] Remote '{remoteID}' rediscovered successfully.")
             # Envoi des données si le remote est valide
             self.device.send_data(self.remote, data)
             return True
