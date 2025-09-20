@@ -57,10 +57,10 @@ class JoystickControlNode(Node):
         self.pub_pedal.publish(pedal_msg)
 
         # Debug logs
-        self.get_logger().info(
-            f"Wheel: {np.rad2deg(wheel_angle_rad):.1f}° | Tilt: {np.rad2deg(cam_msg.y):.1f}° | "
-            f"Pan: {np.rad2deg(cam_msg.z):.1f}° | Throttle: {pedal_msg.data:.2f}"
-        )
+        #self.get_logger().info(
+        #    f"Wheel: {np.rad2deg(wheel_angle_rad):.1f}° | Tilt: {np.rad2deg(cam_msg.y):.1f}° | "
+        #    f"Pan: {np.rad2deg(cam_msg.z):.1f}° | Throttle: {pedal_msg.data:.2f}"
+        #)
 
 
 def main(args=None):
