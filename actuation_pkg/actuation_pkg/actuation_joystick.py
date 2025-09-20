@@ -16,20 +16,27 @@ class JoystickControlNode(Node):
         self.pub_cam = self.create_publisher(Quaternion, 'cam_pose', 10)
         self.pub_pedal = self.create_publisher(Float64, 'pedal_pose', 10)
 
-        # Subscriber
+        # Dernier message Joy reçu
+        self.last_joy_msg = None
+
+        # Subscriber pour le joystick
         self.create_subscription(Joy, 'joy', self.joy_callback, 10)
 
-        self.get_logger().info("Joystick control node started.")
+        # Timer pour publier à 50 Hz
+        self.timer = self.create_timer(0.02, self.publish_loop)  # 50 Hz = 20 ms
+
+        self.get_logger().info("Joystick control node started at 50Hz.")
 
     def joy_callback(self, msg: Joy):
-        """
-        Mapping de la manette Xbox :
-        - Stick gauche horizontal (axes[0]) -> Direction (wheel_pose)
-        - Stick droit vertical (axes[4]) -> Camera Tilt (ch4)
-        - Stick droit horizontal (axes[3]) -> Camera Pan (ch5)
-        - Trigger RT (axes[5]) -> Accélérateur (pedal_pose)
-        - Trigger LT (axes[2]) -> Frein ou marche arrière
-        """
+        """Stocke simplement l'état du joystick pour être publié à 50Hz."""
+        self.last_joy_msg = msg
+
+    def publish_loop(self):
+        """Publie les messages à 50 Hz en utilisant le dernier état du joystick."""
+        if self.last_joy_msg is None:
+            return  # Pas encore de données joystick
+
+        msg = self.last_joy_msg
 
         # ---- 1. Direction (wheel_pose) ----
         # axes[0] = 1.0 (gauche) à -1.0 (droite)
@@ -56,11 +63,12 @@ class JoystickControlNode(Node):
         pedal_msg.data = throttle - brake  # avant positif, arrière négatif
         self.pub_pedal.publish(pedal_msg)
 
-        # Debug logs
-        #self.get_logger().info(
-        #    f"Wheel: {np.rad2deg(wheel_angle_rad):.1f}° | Tilt: {np.rad2deg(cam_msg.y):.1f}° | "
-        #    f"Pan: {np.rad2deg(cam_msg.z):.1f}° | Throttle: {pedal_msg.data:.2f}"
-        #)
+        # Debug optionnel
+        # self.get_logger().info(
+        #     f"Wheel: {np.rad2deg(wheel_angle_rad):.1f}° | "
+        #     f"Tilt: {np.rad2deg(cam_msg.y):.1f}° | Pan: {np.rad2deg(cam_msg.z):.1f}° | "
+        #     f"Throttle: {pedal_msg.data:.2f}"
+        # )
 
 
 def main(args=None):
