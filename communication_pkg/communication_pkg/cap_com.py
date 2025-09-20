@@ -115,8 +115,9 @@ class CapComNode(Node):
         self.last_ping_sent = time()
         buffer = BytesIO()
         buffer.write(b"PING")
+        buffer.seek(0)  # <-- IMPORTANT
         self.send_(FrameHandler(FrameType.COMMAND, FrameSubType.STATE, FrameLabel.PING, buffer))
-        self.get_logger().debug("Ping sent")
+        self.get_logger().info("Ping sent")
 
     def check_connection(self):
         if self.mode != 'teleop':
@@ -137,9 +138,10 @@ class CapComNode(Node):
 
                 # Ping / Pong
                 if self.mode == 'robot' and label == FrameLabel.PING:
-                    self.get_logger().debug("Ping received -> sending Pong")
+                    self.get_logger().info("Ping received -> sending Pong")
                     buffer = BytesIO()
                     buffer.write(b"PONG")
+                    buffer.seek(0)
                     self.send_(FrameHandler(FrameType.COMMAND, FrameSubType.STATE, FrameLabel.PONG, buffer))
                     return
 
