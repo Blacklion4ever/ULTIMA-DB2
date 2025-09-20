@@ -75,7 +75,17 @@ class FrameHandler:
         self.frameType = dataType
         self.frameSubType = dataSubType 
         self.frameLabel = dataLabel
-        self.frameData = BytesIO(data) if data else BytesIO()
+        # Si data est déjà un BytesIO, on l'utilise tel quel
+        if isinstance(data, BytesIO):
+            self.frameData = data
+        elif isinstance(data, (bytes, bytearray)):
+            self.frameData = BytesIO(data)
+        else:
+            self.frameData = BytesIO()
+
+        if self.frameData is not None:
+            self.frameData.seek(0)
+
         self.isValid = False
         self.verify()
         
