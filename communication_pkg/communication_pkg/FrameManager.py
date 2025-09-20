@@ -31,7 +31,10 @@ class FrameLabel(IntEnum):
     IMU_ACCEL = 4
     PEDAL_POSE = 5
     WHEEL_POSE = 6
+    PING = 7       # <-- ajouté
+    PONG = 8       # <-- ajouté
     TEST = 0xff
+
  
 class FrameHandler:
     """
