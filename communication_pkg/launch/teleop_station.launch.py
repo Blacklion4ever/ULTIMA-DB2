@@ -33,7 +33,7 @@ def generate_launch_description():
             output='screen',
             parameters=[
                 {'com_port': '/dev/ttyUSB0'},   # port Xbee sur la station
-                {'com_baudrate': 57600},
+                {'com_baudrate': 115200},
                 {'remote_id': 'ULTIMA'},         # ID Xbee du robot
                 {'mode': 'teleop'}
             ]

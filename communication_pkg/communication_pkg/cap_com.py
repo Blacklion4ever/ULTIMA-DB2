@@ -48,12 +48,12 @@ def deserialize_message(serialized_message, msg_type):
 # CapComNode
 # -------------------------------------
 class CapComNode(Node):
-    def __init__(self, port='/dev/ttyTHS1', baudrate=57600, remoteID='STATION', mode='robot'):
+    def __init__(self, port='/dev/ttyTHS1', baudrate=115200, remoteID='STATION', mode='robot'):
         super().__init__('cap_com')
 
         # --- Déclarer les paramètres ROS2 ---
         self.port = self.declare_parameter('com_port', '/dev/ttyTHS1').get_parameter_value().string_value
-        self.baudrate = self.declare_parameter('com_baudrate', 57600).get_parameter_value().integer_value
+        self.baudrate = self.declare_parameter('com_baudrate', 115200).get_parameter_value().integer_value
         self.remoteID = self.declare_parameter('remote_id', 'STATION').get_parameter_value().string_value
         self.mode = self.declare_parameter('mode', 'robot').get_parameter_value().string_value
 
@@ -115,7 +115,6 @@ class CapComNode(Node):
         self.last_ping_sent = time()
         buffer = BytesIO()
         buffer.write(b"PING")
-        buffer.seek(0)  # <-- IMPORTANT
         self.send_(FrameHandler(FrameType.COMMAND, FrameSubType.STATE, FrameLabel.PING, buffer))
         self.get_logger().info("Ping sent")
 

@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 import rclpy
 from rclpy.node import Node
-from std_msgs.msg import Float64
+from std_msgs.msg import Float32
 from geometry_msgs.msg import Quaternion
 import tkinter as tk
 import numpy as np
@@ -13,8 +13,8 @@ class SliderNode(Node):
 
         # Publishers
         self.pub_cam = self.create_publisher(Quaternion, 'cam_pose', 10)
-        self.pub_wheel = self.create_publisher(Float64, 'wheel_pose', 10)
-        self.pub_pedal = self.create_publisher(Float64, 'pedal_pose', 10)
+        self.pub_wheel = self.create_publisher(Float32, 'wheel_pose', 10)
+        self.pub_pedal = self.create_publisher(Float32, 'pedal_pose', 10)
 
         # Tkinter GUI
         self.root = tk.Tk()
@@ -48,7 +48,7 @@ class SliderNode(Node):
         self.throttle_slider.pack()
 
     def update_wheel(self, value):
-        msg = Float64()
+        msg = Float32()
         msg.data = np.deg2rad(float(value))
         self.pub_wheel.publish(msg)
 
@@ -59,7 +59,7 @@ class SliderNode(Node):
         self.pub_cam.publish(msg)
 
     def update_pedal(self, value):
-        msg = Float64()
+        msg = Float32()
         msg.data = float(value)
         self.pub_pedal.publish(msg)
 

@@ -1,7 +1,7 @@
 #!/usr/bin/env python3.8
 import rclpy
 from rclpy.node import Node
-from std_msgs.msg import Float64
+from std_msgs.msg import Float32
 from geometry_msgs.msg import Quaternion
 
 import busio
@@ -25,8 +25,8 @@ class ActuatorsNode(Node):
 
         # Souscriptions ROS2
         self.create_subscription(Quaternion, 'cam_pose', self.set_cam_pose, 10)
-        self.create_subscription(Float64, 'wheel_pose', self.set_wheel_pose, 10)
-        self.create_subscription(Float64, 'pedal_pose', self.set_pedal_pose, 10)
+        self.create_subscription(Float32, 'wheel_pose', self.set_wheel_pose, 10)
+        self.create_subscription(Float32, 'pedal_pose', self.set_pedal_pose, 10)
 
     def home(self):
         self.kit.servo[0].angle = 60  # Direction
@@ -43,12 +43,12 @@ class ActuatorsNode(Node):
         self.kit.servo[5].angle = pan
         #self.get_logger().info(f"Camera -> Tilt: {tilt:.2f}°, Pan: {pan:.2f}°")
 
-    def set_wheel_pose(self, msg: Float64):
+    def set_wheel_pose(self, msg: Float32):
         val = max(min(60 + np.rad2deg(msg.data), 160), 15)
         self.kit.servo[0].angle = val
         #self.get_logger().info(f"Wheel -> {val:.2f}°")
 
-    def set_pedal_pose(self, msg: Float64):
+    def set_pedal_pose(self, msg: Float32):
         val = max(min(msg.data, 0.25), -0.25)
         self.kit.continuous_servo[8].throttle = val
         #self.get_logger().info(f"Throttle -> {val:.2f}")

@@ -2,7 +2,7 @@
 import rclpy
 from rclpy.node import Node
 from sensor_msgs.msg import Joy
-from std_msgs.msg import Float64
+from std_msgs.msg import Float32
 from geometry_msgs.msg import Quaternion
 import numpy as np
 
@@ -12,9 +12,9 @@ class JoystickControlNode(Node):
         super().__init__('actuation_joystick')
 
         # Publishers
-        self.pub_wheel = self.create_publisher(Float64, 'wheel_pose', 10)
+        self.pub_wheel = self.create_publisher(Float32, 'wheel_pose', 10)
         self.pub_cam = self.create_publisher(Quaternion, 'cam_pose', 10)
-        self.pub_pedal = self.create_publisher(Float64, 'pedal_pose', 10)
+        self.pub_pedal = self.create_publisher(Float32, 'pedal_pose', 10)
 
         # Dernier message Joy reçu
         self.last_joy_msg = None
@@ -23,7 +23,7 @@ class JoystickControlNode(Node):
         self.create_subscription(Joy, 'joy', self.joy_callback, 10)
 
         # Timer pour publier à 50 Hz
-        self.timer = self.create_timer(0.02, self.publish_loop)  # 50 Hz = 20 ms
+        self.timer = self.create_timer(0.067, self.publish_loop)  # 15 Hz = 67 ms
 
         self.get_logger().info("Joystick control node started at 50Hz.")
 
@@ -41,7 +41,7 @@ class JoystickControlNode(Node):
         # ---- 1. Direction (wheel_pose) ----
         # axes[0] = 1.0 (gauche) à -1.0 (droite)
         wheel_angle_rad = -msg.axes[0] * np.deg2rad(45)  # max ±45°
-        wheel_msg = Float64()
+        wheel_msg = Float32()
         wheel_msg.data = wheel_angle_rad
         self.pub_wheel.publish(wheel_msg)
 
@@ -59,7 +59,7 @@ class JoystickControlNode(Node):
         throttle = (1 - msg.axes[5]) / 2.0 * 0.25  # plage 0 → 0.25
         brake = (1 - msg.axes[2]) / 2.0 * 0.25    # plage 0 → 0.25
 
-        pedal_msg = Float64()
+        pedal_msg = Float32()
         pedal_msg.data = throttle - brake  # avant positif, arrière négatif
         self.pub_pedal.publish(pedal_msg)
 
