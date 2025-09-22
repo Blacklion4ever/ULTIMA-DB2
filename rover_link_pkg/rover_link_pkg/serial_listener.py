@@ -11,7 +11,7 @@ class SerialListener(Node):
         super().__init__('rover_serial_listener')
 
         # Ouverture du port série
-        self.ser = serial.Serial("/dev/ttyUSB1", 115200, timeout=0.01)
+        self.ser = serial.Serial("/dev/ttyTHS1", 115200, timeout=0.01)
         self.fm = FrameManager()
         self.pub_command = CommandPublisher()
 

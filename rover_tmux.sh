@@ -1,8 +1,8 @@
 #!/bin/bash
 
 SESSION="rover_tmux"
-WS_ROOT=/home/brouk/ros2_humble_ws
-ROVER_TTY="/dev/ttyUSB1"  # XBee côté rover
+WS_ROOT=/home/ultima/workspace/ros2_eloquent_ws
+ROVER_TTY="/dev/ttyTHS1"  # XBee côté rover
 
 tmux new-session -d -s $SESSION
 
@@ -12,7 +12,7 @@ tmux send-keys -t $SESSION:0 "cd $WS_ROOT && source install/setup.bash && ros2 r
 
 # --- Fenêtre 1 : Affichage Pan/Tilt ---
 tmux split-window -v -t $SESSION:0
-tmux send-keys -t $SESSION:0.1 "cd $WS_ROOT && source install/setup.bash && ros2 topic echo /actuator/pan_tilt" C-m
+tmux send-keys -t $SESSION:0.1 "cd $WS_ROOT && source install/setup.bash && ros2 run actuation_pkg actuators" C-m
 
 # --- Fenêtre 2 : Affichage Steering/Drive ---
 tmux split-window -h -t $SESSION:0.1

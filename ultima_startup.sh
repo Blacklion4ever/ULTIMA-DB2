@@ -4,5 +4,5 @@
 cd ~/workspace/ros2_eloquent_ws
 source install/setup.bash
 printf "TELEOP LAUNCH"
-ros2 launch communication_pkg teleop_robot.launch.py
+src/ULTIMA-DB2/rover_tmux.sh
 
