@@ -1,0 +1,23 @@
+<?xml version="1.0"?>
+<package format="3">
+  <name>common_link_lib</name>
+  <version>0.1.0</version>
+  <description>Common frame manager library for rover/station ROS2 nodes</description>
+  <maintainer email="ton.email@example.com">TonNom</maintainer>
+  <license>MIT</license>
+
+  <!-- Build system -->
+  <buildtool_depend>ament_python</buildtool_depend>
+
+  <!-- ROS2 Python dependencies, si utilisées -->
+  <build_depend>rclpy</build_depend>
+  <exec_depend>rclpy</exec_depend>
+
+  <!-- Si tu utilises des messages standard ROS2 -->
+  <build_depend>std_msgs</build_depend>
+  <exec_depend>std_msgs</exec_depend>
+
+  <export>
+    <build_type>ament_python</build_type>
+  </export>
+</package>

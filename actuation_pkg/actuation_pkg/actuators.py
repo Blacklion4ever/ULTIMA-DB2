@@ -1,14 +1,13 @@
 #!/usr/bin/env python3.8
 import rclpy
 from rclpy.node import Node
-from std_msgs.msg import Float32
-from geometry_msgs.msg import Quaternion
+from std_msgs.msg import Int8MultiArray
+from std_msgs.msg import Int16MultiArray
 
 import busio
 import board
 from adafruit_servokit import ServoKit
 import numpy as np
-
 
 class ActuatorsNode(Node):
     def __init__(self):
@@ -23,36 +22,42 @@ class ActuatorsNode(Node):
         # Remettre les servos à la position neutre
         self.home()
 
-        # Souscriptions ROS2
-        self.create_subscription(Quaternion, 'cam_pose', self.set_cam_pose, 10)
-        self.create_subscription(Float32, 'wheel_pose', self.set_wheel_pose, 10)
-        self.create_subscription(Float32, 'pedal_pose', self.set_pedal_pose, 10)
+        # Souscriptions ROS2 vers topics station_link_pkg
+        self.create_subscription(Int16MultiArray, '/rover/command/pan_tilt', self.set_cam_pose, 10)
+        self.create_subscription(Int8MultiArray, '/rover/command/steering_propulsion', self.set_drive, 10)
 
     def home(self):
-        self.kit.servo[0].angle = 60  # Direction
-        self.kit.servo[4].angle = 90  # Camera tilt
-        self.kit.servo[5].angle = 90  # Camera pan
+        # Direction neutre
+        self.kit.servo[0].angle = 60
+        # Camera tilt / pan neutre
+        self.kit.servo[4].angle = 90
+        self.kit.servo[5].angle = 90
+        # Propulsion
         self.kit.continuous_servo[8].throttle = 0
         self.get_logger().info("Servos reset to home position")
 
-    def set_cam_pose(self, msg: Quaternion):
-        # Tilt = Y, Pan = Z
-        tilt = np.rad2deg(msg.y)
-        pan = np.rad2deg(msg.z)
-        self.kit.servo[4].angle = tilt
-        self.kit.servo[5].angle = pan
-        #self.get_logger().info(f"Camera -> Tilt: {tilt:.2f}°, Pan: {pan:.2f}°")
+    # -------- Caméra --------
+    def set_cam_pose(self, msg: Int16MultiArray):
+        # msg.data = [pan_deg, tilt_deg] -> -180 → +180
+        pan_deg, tilt_deg = msg.data
+        # Convertir en servo range (0-180°)
+        pan_servo = np.clip(90 + pan_deg, 0, 180)
+        tilt_servo = np.clip(90 + tilt_deg, 0, 180)
+        self.kit.servo[5].angle = pan_servo
+        self.kit.servo[4].angle = tilt_servo
+        # self.get_logger().info(f"Camera -> Tilt: {tilt_servo:.2f}°, Pan: {pan_servo:.2f}°")
 
-    def set_wheel_pose(self, msg: Float32):
-        val = max(min(60 + np.rad2deg(msg.data), 160), 15)
-        self.kit.servo[0].angle = val
-        #self.get_logger().info(f"Wheel -> {val:.2f}°")
-
-    def set_pedal_pose(self, msg: Float32):
-        val = max(min(msg.data, 0.25), -0.25)
-        self.kit.continuous_servo[8].throttle = val
-        #self.get_logger().info(f"Throttle -> {val:.2f}")
-
+    # -------- Direction et propulsion --------
+    def set_drive(self, msg: Int8MultiArray):
+        # msg.data = [steering_deg, propulsion_percent]
+        steering, propulsion = msg.data
+        # Convertir steering en servo angle (15° → 160° sur ton servo)
+        wheel_angle = np.clip(60 + steering, 15, 160)
+        self.kit.servo[0].angle = wheel_angle
+        # Convertir propulsion -100 → +100% en throttle -1 → +1
+        throttle = np.clip(propulsion / 100.0, -1.0, 1.0)
+        self.kit.continuous_servo[8].throttle = throttle
+        # self.get_logger().info(f"Wheel: {wheel_angle:.2f}°, Throttle: {throttle:.2f}")
 
 def main(args=None):
     rclpy.init(args=args)
@@ -66,7 +71,5 @@ def main(args=None):
         node.destroy_node()
         rclpy.shutdown()
 
-
 if __name__ == '__main__':
     main()
-

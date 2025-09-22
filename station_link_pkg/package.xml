@@ -1,0 +1,29 @@
+<?xml version="1.0"?>
+<package format="3">
+  <name>station_link_pkg</name>
+  <version>0.1.0</version>
+  <description>Python nodes for rover XBee communication</description>
+  <maintainer email="ton.email@example.com">TonNom</maintainer>
+  <license>MIT</license>
+
+  <!-- Build system -->
+  <buildtool_depend>ament_python</buildtool_depend>
+
+  <!-- ROS2 Python dependencies -->
+  <build_depend>rclpy</build_depend>
+  <exec_depend>rclpy</exec_depend>
+
+  <!-- Standard messages, si nécessaires -->
+  <build_depend>std_msgs</build_depend>
+  <exec_depend>std_msgs</exec_depend>
+
+  <!-- Dépendance sur la librairie commune -->
+  <build_depend>custom_msgs</build_depend>
+  <exec_depend>custom_msgs</exec_depend>
+  <build_depend>common_link_lib</build_depend>
+  <exec_depend>common_link_lib</exec_depend>
+
+  <export>
+    <build_type>ament_python</build_type>
+  </export>
+</package>

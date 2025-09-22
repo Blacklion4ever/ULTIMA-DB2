@@ -1,67 +1,63 @@
 #!/usr/bin/env python3
 import rclpy
 from rclpy.node import Node
-from std_msgs.msg import Float32
-from geometry_msgs.msg import Quaternion
+from std_msgs.msg import Int16MultiArray, Int8MultiArray
 import tkinter as tk
 import numpy as np
 
-
 class SliderNode(Node):
     def __init__(self):
-        super().__init__('actuation_slider')
+        super().__init__('slider_command_node')
 
-        # Publishers
-        self.pub_cam = self.create_publisher(Quaternion, 'cam_pose', 10)
-        self.pub_wheel = self.create_publisher(Float32, 'wheel_pose', 10)
-        self.pub_pedal = self.create_publisher(Float32, 'pedal_pose', 10)
+        # Publishers vers station_link_pkg
+        self.pub_pan_tilt = self.create_publisher(Int16MultiArray, '/rover/command/pan_tilt', 10)
+        self.pub_steer_prop = self.create_publisher(Int8MultiArray, '/rover/command/steering_propulsion', 10)
 
         # Tkinter GUI
         self.root = tk.Tk()
         self.root.title("Actuation Control Panel")
 
-        # Wheel
-        tk.Label(self.root, text="Wheel (deg)").pack()
-        self.wheel_slider = tk.Scale(self.root, from_=-45, to=45,
-                                     orient=tk.HORIZONTAL, command=self.update_wheel)
+        # ---- Wheel / Steering ----
+        tk.Label(self.root, text="Wheel / Steering (deg)").pack()
+        self.wheel_slider = tk.Scale(self.root, from_=-100, to=100,
+                                     orient=tk.HORIZONTAL, command=self.update_steer_prop)
         self.wheel_slider.pack()
 
-        # Camera Tilt
+        # ---- Camera Tilt ----
         tk.Label(self.root, text="Camera Tilt (deg)").pack()
-        self.tilt_slider = tk.Scale(self.root, from_=0, to=180,
-                                    orient=tk.HORIZONTAL, command=self.update_cam)
-        self.tilt_slider.set(90)
+        self.tilt_slider = tk.Scale(self.root, from_=-180, to=180,
+                                    orient=tk.HORIZONTAL, command=self.update_pan_tilt)
+        self.tilt_slider.set(0)
         self.tilt_slider.pack()
 
-        # Camera Pan
+        # ---- Camera Pan ----
         tk.Label(self.root, text="Camera Pan (deg)").pack()
-        self.pan_slider = tk.Scale(self.root, from_=0, to=180,
-                                   orient=tk.HORIZONTAL, command=self.update_cam)
-        self.pan_slider.set(90)
+        self.pan_slider = tk.Scale(self.root, from_=-180, to=180,
+                                   orient=tk.HORIZONTAL, command=self.update_pan_tilt)
+        self.pan_slider.set(0)
         self.pan_slider.pack()
 
-        # Throttle
-        tk.Label(self.root, text="Throttle (-0.25 to 0.25)").pack()
-        self.throttle_slider = tk.Scale(self.root, from_=-0.25, to=0.25,
-                                        resolution=0.01, orient=tk.HORIZONTAL, command=self.update_pedal)
+        # ---- Throttle / Propulsion ----
+        tk.Label(self.root, text="Throttle (-100 → +100%)").pack()
+        self.throttle_slider = tk.Scale(self.root, from_=-100, to=100,
+                                        orient=tk.HORIZONTAL, command=self.update_steer_prop)
         self.throttle_slider.set(0)
         self.throttle_slider.pack()
 
-    def update_wheel(self, value):
-        msg = Float32()
-        msg.data = np.deg2rad(float(value))
-        self.pub_wheel.publish(msg)
+    # ---- Callbacks ----
+    def update_pan_tilt(self, _):
+        pan_deg = int(self.pan_slider.get())
+        tilt_deg = int(self.tilt_slider.get())
+        msg = Int16MultiArray()
+        msg.data = [pan_deg, tilt_deg]
+        self.pub_pan_tilt.publish(msg)
 
-    def update_cam(self, _):
-        msg = Quaternion()
-        msg.y = np.deg2rad(float(self.tilt_slider.get()))
-        msg.z = np.deg2rad(float(self.pan_slider.get()))
-        self.pub_cam.publish(msg)
-
-    def update_pedal(self, value):
-        msg = Float32()
-        msg.data = float(value)
-        self.pub_pedal.publish(msg)
+    def update_steer_prop(self, _):
+        steering = int(self.wheel_slider.get())
+        propulsion = int(self.throttle_slider.get())
+        msg = Int8MultiArray()
+        msg.data = [steering, propulsion]
+        self.pub_steer_prop.publish(msg)
 
     def run(self):
         self.root.mainloop()
@@ -81,4 +77,3 @@ def main(args=None):
 
 if __name__ == '__main__':
     main()
-
