@@ -17,6 +17,10 @@ class SerialListener(Node):
 
         self.get_logger().info("Rover Serial Listener démarré.")
         self.timer = self.create_timer(0.01, self.read_serial)
+        self.timer_fallback = self.create_timer(0.5,self.fallback)
+
+    def fallback(self):
+        self.pub_command.publish_fallback(self.get_clock().now().nanoseconds)
 
     def read_serial(self):
         """Lecture des données du port série et dispatch selon le type."""
@@ -37,7 +41,7 @@ class SerialListener(Node):
 
             elif parsed['header'] == 0x01:
                 # Commandes actuateurs
-                self.pub_command.publish_command(parsed)
+                self.pub_command.publish_command(parsed, self.get_clock().now().nanoseconds)
 
 
 def main(args=None):

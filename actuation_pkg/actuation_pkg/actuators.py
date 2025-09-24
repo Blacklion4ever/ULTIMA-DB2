@@ -4,6 +4,16 @@ from rclpy.node import Node
 from std_msgs.msg import Int8MultiArray
 from std_msgs.msg import Int16MultiArray
 
+import time
+import os
+
+i2c_device = "/dev/i2c-1"
+
+while not os.path.exists(i2c_device):
+    print(f"Waiting for I2C device {i2c_device}...")
+    time.sleep(1)
+
+
 import busio
 import board
 from adafruit_servokit import ServoKit
@@ -23,8 +33,8 @@ class ActuatorsNode(Node):
         self.home()
 
         # Souscriptions ROS2 vers topics station_link_pkg
-        self.create_subscription(Int16MultiArray, '/rover/command/pan_tilt', self.set_cam_pose, 10)
-        self.create_subscription(Int8MultiArray, '/rover/command/steering_propulsion', self.set_drive, 10)
+        self.create_subscription(Int16MultiArray, '/command/pan_tilt', self.set_cam_pose, 10)
+        self.create_subscription(Int8MultiArray, '/command/steering_propulsion', self.set_drive, 10)
 
     def home(self):
         # Direction neutre
@@ -43,9 +53,10 @@ class ActuatorsNode(Node):
         # Convertir en servo range (0-180°)
         pan_servo = np.clip(90 + pan_deg, 0, 180)
         tilt_servo = np.clip(90 + tilt_deg, 0, 180)
+        self.get_logger().info(f"Sending -> Tilt: {tilt_servo:.2f}°, Pan: {pan_servo:.2f}°")
         self.kit.servo[5].angle = pan_servo
         self.kit.servo[4].angle = tilt_servo
-        # self.get_logger().info(f"Camera -> Tilt: {tilt_servo:.2f}°, Pan: {pan_servo:.2f}°")
+        self.get_logger().info(f"Camera -> Tilt: {tilt_servo:.2f}°, Pan: {pan_servo:.2f}°")
 
     # -------- Direction et propulsion --------
     def set_drive(self, msg: Int8MultiArray):
@@ -57,7 +68,7 @@ class ActuatorsNode(Node):
         # Convertir propulsion -100 → +100% en throttle -1 → +1
         throttle = np.clip(propulsion / 100.0, -1.0, 1.0)
         self.kit.continuous_servo[8].throttle = throttle
-        # self.get_logger().info(f"Wheel: {wheel_angle:.2f}°, Throttle: {throttle:.2f}")
+        self.get_logger().info(f"Wheel: {wheel_angle:.2f}°, Throttle: {throttle:.2f}")
 
 def main(args=None):
     rclpy.init(args=args)

@@ -10,8 +10,8 @@ class SliderNode(Node):
         super().__init__('slider_command_node')
 
         # Publishers vers station_link_pkg
-        self.pub_pan_tilt = self.create_publisher(Int16MultiArray, '/rover/command/pan_tilt', 10)
-        self.pub_steer_prop = self.create_publisher(Int8MultiArray, '/rover/command/steering_propulsion', 10)
+        self.pub_pan_tilt = self.create_publisher(Int16MultiArray, '/command/pan_tilt', 10)
+        self.pub_steer_prop = self.create_publisher(Int8MultiArray, '/command/steering_propulsion', 10)
 
         # Tkinter GUI
         self.root = tk.Tk()
