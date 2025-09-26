@@ -9,6 +9,9 @@ endif()
 find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(sensor_msgs REQUIRED)
+find_package(geometry_msgs REQUIRED)
+find_package(tf2 REQUIRED)
+find_package(std_srvs REQUIRED)
 
 # OpenHMD
 find_path(OPENHMD_INCLUDE_DIR openhmd.h)
@@ -34,7 +37,7 @@ target_include_directories(dk2_node PRIVATE ${OPENHMD_INCLUDE_DIR})
 target_link_libraries(dk2_node ${OPENHMD_LIBRARY} ${HIDAPI_LIBRARY})
 
 # ROS2 deps
-ament_target_dependencies(dk2_node rclcpp sensor_msgs)
+ament_target_dependencies(dk2_node rclcpp sensor_msgs geometry_msgs tf2 std_srvs)
 
 # Installation
 install(TARGETS
