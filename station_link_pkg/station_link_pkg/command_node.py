@@ -7,8 +7,8 @@ class CommandNode(Node):
     def __init__(self):
         super().__init__('station_command_node')
         self.serial = SerialManager()
-        self.sub_pan_tilt = self.create_subscription(Int16MultiArray, '/rover/command/pan_tilt', self.cb_pan_tilt, 10)
-        self.sub_steer = self.create_subscription(Int8MultiArray, '/rover/command/steering_propulsion', self.cb_steer, 10)
+        self.sub_pan_tilt = self.create_subscription(Int16MultiArray, '/command/pan_tilt', self.cb_pan_tilt, 10)
+        self.sub_steer = self.create_subscription(Int8MultiArray, '/command/steering_propulsion', self.cb_steer, 10)
 
     def cb_pan_tilt(self, msg):
         payload = msg.data[0].to_bytes(2,'big',signed=True) + msg.data[1].to_bytes(2,'big',signed=True)
