@@ -51,8 +51,8 @@ class ActuatorsNode(Node):
         # msg.data = [pan_deg, tilt_deg] -> -180 → +180
         pan_deg, tilt_deg = msg.data
         # Convertir en servo range (0-180°)
-        pan_servo = np.clip(90 + pan_deg, 0, 180)
-        tilt_servo = np.clip(90 + tilt_deg, 0, 180)
+        pan_servo = np.clip(90 + pan_deg/10.0, 0, 180)
+        tilt_servo = np.clip(90 + tilt_deg/10.0, 0, 180)
         self.get_logger().info(f"Sending -> Tilt: {tilt_servo:.2f}°, Pan: {pan_servo:.2f}°")
         self.kit.servo[5].angle = pan_servo
         self.kit.servo[4].angle = tilt_servo

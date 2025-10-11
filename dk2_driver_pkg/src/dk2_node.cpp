@@ -86,7 +86,7 @@ public:
 
 private:
     void resetIMUCallback(
-        const std::shared_ptr<std_srvs::srv::Trigger::Request> req,
+        const std::shared_ptr<std_srvs::srv::Trigger::Request> /* unused */,
         std::shared_ptr<std_srvs::srv::Trigger::Response> res)
     {
         float q[4];
@@ -121,8 +121,8 @@ private:
         float roll_deg  = roll * 180.0 / M_PI;
 
         // Re-mapper pour Pan/Tilt selon ton repère
-        double pan_deg  = -pitch * 180.0 / M_PI;  // yaw de la tête → Pan
-        double tilt_deg = -roll * 180.0 / M_PI;  // pitch de la tête → Tilt
+        double pan_deg  = (-pitch * 180.0 / M_PI)*10.;  // yaw de la tête → Pan
+        double tilt_deg = (-roll * 180.0 / M_PI)*10.;  // pitch de la tête → Tilt
 
         // --- Publier ---
         auto msg = std_msgs::msg::Int16MultiArray();
