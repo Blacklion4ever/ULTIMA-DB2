@@ -6,14 +6,15 @@ from std_msgs.msg import Int16MultiArray, Int8MultiArray
 from std_srvs.srv import Trigger  # + service Trigger
 import numpy as np
 
+DEADBAND = 0.03
+
 class JoystickControlNode(Node):
     def __init__(self):
         super().__init__('joystick_command_node')
 
-        # Paramètre: index du bouton "stick gauche pressé" (L3).
-        # Xbox/SDL par défaut: 9. Ajuste si besoin.
-        self.declare_parameter('left_stick_button_index', 9)
-        self.left_stick_button_index = int(self.get_parameter('left_stick_button_index').value)
+        # Paramètre: index du bouton "pressé" 
+        self.declare_parameter('hmd_reset_button_index', 10)
+        self.hmd_reset_button_index = int(self.get_parameter('hmd_reset_button_index').value)
 
         # Client service reset IMU
         self.reset_client = self.create_client(Trigger, '/reset_imu')
@@ -21,7 +22,7 @@ class JoystickControlNode(Node):
         self._prev_left_stick_btn = 0  # anti-rebond (front montant)
 
         # Publishers vers station_link_pkg
-        self.pub_pan_tilt = self.create_publisher(Int16MultiArray, '/command/pan_tilt', 10)
+        #self.pub_pan_tilt = self.create_publisher(Int16MultiArray, '/command/pan_tilt', 10)
         self.pub_steer_prop = self.create_publisher(Int8MultiArray, '/command/steering_propulsion', 10)
 
         # Dernier message Joy reçu
@@ -34,7 +35,10 @@ class JoystickControlNode(Node):
         self.timer = self.create_timer(0.02, self.publish_loop)  # 50 Hz
 
         self.get_logger().info("Joystick node publishing to /rover/command topics at 50Hz.")
-
+    
+    def _clamp01(self, x: float) -> float:
+        return 0.0 if x < 0.0 else 1.0 if x > 1.0 else x
+    
     def _on_reset_done(self, future):
         try:
             resp = future.result()
@@ -63,12 +67,12 @@ class JoystickControlNode(Node):
         # Lecture sécurisée du bouton L3
         cur = 0
         try:
-            cur = int(msg.buttons[self.left_stick_button_index])
+            cur = int(msg.buttons[self.hmd_reset_button_index])
         except Exception:
             # Index invalide ou message incomplet
             if not self._warned_no_service:
                 self.get_logger().warn(
-                    f"Index bouton L3 invalide: {self.left_stick_button_index}"
+                    f"Index bouton L3 invalide: {self.hmd_reset_button_index}"
                 )
             return
 
@@ -77,6 +81,19 @@ class JoystickControlNode(Node):
             self._try_reset_imu()
 
         self._prev_left_stick_btn = cur
+
+    def triggers_to_propulsion_percent(self, axes) -> int:
+        # RT sur axes[5], LT sur axes[2]
+        rt = self._clamp01((1.0 - axes[5]) * 0.5)
+        lt = self._clamp01((1.0 - axes[2]) * 0.5)
+
+        if rt < DEADBAND and lt < DEADBAND:
+            return 0
+        if abs(rt - lt) < DEADBAND:
+            return 0
+
+        u = rt - lt  # [-1, 1]
+        return int(round(u * 100))
 
     def publish_loop(self):
         if self.last_joy_msg is None:
@@ -94,9 +111,12 @@ class JoystickControlNode(Node):
 
         # ---- 2. Steering / Propulsion (Int8MultiArray) ----
         steering = int(-msg.axes[0] * 100)  # axes[0] = Stick gauche horizontal
-        throttle = int((1 - msg.axes[5]) / 2 * 100)  # RT
-        brake = int((1 - msg.axes[2]) / 2 * 100)     # LT
-        propulsion = throttle - brake
+        
+            
+        #throttle = int((1 - msg.axes[5]) / 2 * 100)  # RT
+        #brake = int((1 - msg.axes[2]) / 2 * 100)     # LT
+        #propulsion = throttle - brake
+        propulsion = self.triggers_to_propulsion_percent(msg.axes)
 
         steer_prop_msg = Int8MultiArray()
         steer_prop_msg.data = [steering, propulsion]
