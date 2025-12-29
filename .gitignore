@@ -1,0 +1,3 @@
+xr_cam_pkg/COLCON_IGNORE
+dk2_driver_pkg/COLCON_IGNORE
+actuation_pkg/actuation_pkg/__pycache__

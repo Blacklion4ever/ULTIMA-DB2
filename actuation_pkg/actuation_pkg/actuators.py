@@ -15,6 +15,8 @@ while not os.path.exists(I2C_DEVICE):
 import busio, board
 from adafruit_servokit import ServoKit
 
+CMD_MAX_FORWARD = 0.60
+CMD_MAX_REVERSE = -0.45
 
 class ActuatorsNode(Node):
     def __init__(self):
@@ -82,12 +84,24 @@ class ActuatorsNode(Node):
         self.kit.servo[5].angle = pan_servo
         self.kit.servo[4].angle = tilt_servo
 
+    def map_throttle(self, user_pct):
+        user_pct = np.clip(user_pct, -100.0, 100.0)
+        if user_pct >= 0.0:
+            return (user_pct / 100.0) * CMD_MAX_FORWARD
+        else:
+            return (user_pct / 100.0) * abs(CMD_MAX_REVERSE)
+
+
     # ----- Direction + consigne propulsion -----
     def set_drive(self, msg: Int8MultiArray):
         steering_deg, propulsion_percent = msg.data
         wheel_angle = float(np.clip(60 + steering_deg, 15, 160))
         self.kit.servo[0].angle = wheel_angle
-        self._u_cmd = float(np.clip(propulsion_percent / 100.0, -1.0, 1.0))
+        
+        #self._u_cmd = float(np.clip(propulsion_percent / 100.0, -1.0, 1.0))
+        self._u_cmd = self.map_throttle(propulsion_percent)
+        self.get_logger().info(f"map_throttle in ({propulsion_percent:.3f}) out in ({self._u_cmd:.3f})")
+       
 
     # ----- Boucle limiteur avec logs -----
     def _update_throttle(self):

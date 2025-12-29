@@ -7,51 +7,30 @@ endif()
 
 # find dependencies
 find_package(ament_cmake REQUIRED)
+find_package(ament_index_cpp REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(std_msgs REQUIRED)
 
-# ================= CORE LIBRARY =================
-add_library(hall_encoder_core
-  src/core/Encoder.cpp
-  src/core/EncoderManager.cpp
-  src/hal/GpioLibgpiod.cpp
-)
-
-target_include_directories(hall_encoder_core PUBLIC
-  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
-  $<INSTALL_INTERFACE:include>
-)
-
-target_link_libraries(hall_encoder_core
-  gpiod
-  pthread
-)
-
 # ================= ROS 2 NODE =================
-add_executable(encoder_node
-  src/encoder_node.cpp
-)
 
-target_link_libraries(encoder_node hall_encoder_core)
-ament_target_dependencies(encoder_node rclcpp)
+add_executable(wheel_encoder_node src/wheel_encoder_node.cpp)
+ament_target_dependencies(wheel_encoder_node rclcpp std_msgs ament_index_cpp)
+target_link_libraries(wheel_encoder_node gpiod pthread)
 
-# ================= STANDALONE APP =================
-add_executable(encoder_monitor
-  apps/encoder_monitor.cpp
-)
-
-target_link_libraries(encoder_monitor hall_encoder_core)
+add_executable(motor_encoder_node src/motor_encoder_node.cpp)
+ament_target_dependencies(motor_encoder_node rclcpp std_msgs ament_index_cpp)
+target_link_libraries(motor_encoder_node gpiod pthread)
 
 # ================= INSTALL =================
 install(TARGETS
-  hall_encoder_core
-  encoder_node
-  encoder_monitor
+  wheel_encoder_node
+  motor_encoder_node
   DESTINATION lib/${PROJECT_NAME}
 )
-
-install(DIRECTORY include/
-  DESTINATION include/
+install(
+  FILES
+    config/motor_lut.csv
+  DESTINATION share/${PROJECT_NAME}
 )
 
 ament_package()

@@ -44,6 +44,17 @@ class SliderNode(Node):
         self.throttle_slider.set(0)
         self.throttle_slider.pack()
 
+        preset_frame = tk.Frame(self.root)
+        preset_frame.pack()
+
+        for v in [-100, -75, -50, -25, 0, 25, 50, 75, 100]:
+            tk.Button(
+                preset_frame,
+                text=f"{v}%",
+                command=lambda x=v: self.throttle_slider.set(x)
+            ).pack(side=tk.LEFT)
+
+
     # ---- Callbacks ----
     def update_pan_tilt(self, _):
         pan_deg = int(self.pan_slider.get())
