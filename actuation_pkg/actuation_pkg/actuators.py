@@ -6,6 +6,9 @@ from rclpy.node import Node
 from rclpy.parameter import Parameter
 from rcl_interfaces.msg import SetParametersResult
 from std_msgs.msg import Int8MultiArray, Int16MultiArray
+from rclpy.parameter import Parameter
+from rcl_interfaces.msg import SetParametersResult
+from std_msgs.msg import Int8MultiArray, Int16MultiArray
 
 I2C_DEVICE = "/dev/i2c-1"
 while not os.path.exists(I2C_DEVICE):
@@ -77,6 +80,7 @@ class ActuatorsNode(Node):
         self._y_out = 0.0
 
     # ----- Caméra -----
+    # ----- Caméra -----
     def set_cam_pose(self, msg: Int16MultiArray):
         pan_deg, tilt_deg = msg.data
         pan_servo = float(np.clip(90 + pan_deg / 10.0, 0, 180))
@@ -92,6 +96,7 @@ class ActuatorsNode(Node):
             return (user_pct / 100.0) * abs(CMD_MAX_REVERSE)
 
 
+    # ----- Direction + consigne propulsion -----
     # ----- Direction + consigne propulsion -----
     def set_drive(self, msg: Int8MultiArray):
         steering_deg, propulsion_percent = msg.data

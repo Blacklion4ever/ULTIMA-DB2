@@ -12,6 +12,9 @@ find_package(sensor_msgs REQUIRED)
 find_package(geometry_msgs REQUIRED)
 find_package(tf2 REQUIRED)
 find_package(std_srvs REQUIRED)
+find_package(tf2_ros REQUIRED)
+find_package(tf2_geometry_msgs REQUIRED)
+find_package(visualization_msgs REQUIRED)
 
 # OpenHMD
 find_path(OPENHMD_INCLUDE_DIR openhmd.h)
@@ -37,7 +40,7 @@ target_include_directories(dk2_node PRIVATE ${OPENHMD_INCLUDE_DIR})
 target_link_libraries(dk2_node ${OPENHMD_LIBRARY} ${HIDAPI_LIBRARY})
 
 # ROS2 deps
-ament_target_dependencies(dk2_node rclcpp sensor_msgs geometry_msgs tf2 std_srvs)
+ament_target_dependencies(dk2_node rclcpp sensor_msgs geometry_msgs tf2 std_srvs tf2_ros tf2_geometry_msgs visualization_msgs)
 
 # Installation
 install(TARGETS

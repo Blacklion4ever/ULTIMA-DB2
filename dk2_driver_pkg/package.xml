@@ -6,8 +6,14 @@
   <description>TODO: Package description</description>
   <maintainer email="brouk.wedajo@gmail.com">brouk</maintainer>
   <license>TODO: License declaration</license>
+  
+  <depend>geometry_msgs</depend>
+  <depend>tf2</depend>
+  <depend>tf2_ros</depend>
+  <depend>tf2_geometry_msgs</depend>
 
   <buildtool_depend>ament_cmake</buildtool_depend>
+
 
   <test_depend>ament_lint_auto</test_depend>
   <test_depend>ament_lint_common</test_depend>
