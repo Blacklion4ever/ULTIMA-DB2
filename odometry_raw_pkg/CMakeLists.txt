@@ -19,6 +19,10 @@ find_package(tf2_geometry_msgs REQUIRED)
 
 add_executable(odom_node src/odom_node.cpp)
 
+add_executable(calibrate_encoders src/calibrate_encoders.cpp)
+target_link_libraries(calibrate_encoders gpiod pthread)
+install(TARGETS calibrate_encoders DESTINATION lib/${PROJECT_NAME})
+
 ament_target_dependencies(odom_node
   rclcpp
   nav_msgs
