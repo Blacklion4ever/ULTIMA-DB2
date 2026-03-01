@@ -5,7 +5,12 @@
 
 #include <tf2_ros/transform_broadcaster.h>
 #include <tf2/LinearMath/Quaternion.h>
-#include <tf2_geometry_msgs/tf2_geometry_msgs.hpp>
+
+#if __has_include(<tf2_geometry_msgs/tf2_geometry_msgs.hpp>)
+  #include <tf2_geometry_msgs/tf2_geometry_msgs.hpp>
+#else
+  #include <tf2_geometry_msgs/tf2_geometry_msgs.h>
+#endif
 
 #include <gpiod.h>
 #include <atomic>
@@ -113,7 +118,7 @@ public:
     {
         // -------- Parameters --------
         meters_per_tick_motor_ = declare_parameter("meters_per_tick_motor", 0.0001);
-        meters_per_tick_wheel_ = declare_parameter("meters_per_tick_wheel", 0.0001);
+        meters_per_tick_wheel_ = declare_parameter("meters_per_tick_wheel", 0.0285);
         wheelbase_             = declare_parameter("wheelbase", 0.30);
         update_period_ms_      = declare_parameter("update_period_ms", 50);
 
