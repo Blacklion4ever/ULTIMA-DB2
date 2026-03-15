@@ -20,7 +20,7 @@ class VideoPublisher(Node):
         self.bridge = CvBridge()
 
         # --- Initialisation caméra ---
-        subprocess.run(["v4l2-ctl", "--device="+DEVICE, "--set-standard=NTSC"])
+        subprocess.run(["v4l2-ctl", "--device="+DEVICE, "--set-standard=PAL"])
         self.set_controls(brightness=150, contrast=70, saturation=80, hue=0)
 
         self.cap = cv2.VideoCapture(DEVICE)
@@ -78,6 +78,8 @@ class VideoPublisher(Node):
         if not ret:
             self.get_logger().warn("Frame non capturée")
             return
+        # Rotation 90° anti-horaire
+        # frame = cv2.rotate(frame, cv2.ROTATE_90_COUNTERCLOCKWISE)
         msg = self.bridge.cv2_to_imgmsg(frame, encoding="bgr8")
         self.publisher_.publish(msg)
 

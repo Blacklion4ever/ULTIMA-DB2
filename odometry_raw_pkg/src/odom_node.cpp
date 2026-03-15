@@ -117,9 +117,9 @@ public:
     OdomNode() : Node("odom_node")
     {
         // -------- Parameters --------
-        meters_per_tick_motor_ = declare_parameter("meters_per_tick_motor", 0.0001);
-        meters_per_tick_wheel_ = declare_parameter("meters_per_tick_wheel", 0.0285);
-        wheelbase_             = declare_parameter("wheelbase", 0.30);
+        meters_per_tick_motor_ = declare_parameter("meters_per_tick_motor", 0.00195);
+        meters_per_tick_wheel_ = declare_parameter("meters_per_tick_wheel", 0.01629);
+        wheelbase_             = declare_parameter("wheelbase", 0.325);
         update_period_ms_      = declare_parameter("update_period_ms", 50);
 
         sigma_v_base_ = declare_parameter("sigma_v_base", 0.05);
@@ -131,8 +131,8 @@ public:
         int motor_a = declare_parameter("motor_gpio_a", 216);
         int motor_b = declare_parameter("motor_gpio_b", 38);
 
-        int wheel_a = declare_parameter("wheel_gpio_a", 149);
-        int wheel_b = declare_parameter("wheel_gpio_b", 200);
+        int wheel_a = declare_parameter("wheel_gpio_a", 200);
+        int wheel_b = declare_parameter("wheel_gpio_b", 149);
 
         // -------- Encoders --------
         motor_encoder_ = std::make_unique<QuadEncoder>(chip, motor_a, motor_b);
